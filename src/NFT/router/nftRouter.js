@@ -11,6 +11,11 @@ router.route('/')
 
 router.post('/multiple', upload.array('nftImage'), nftController.createNFT)
 router.route("/showNFTForCollection/:id").get(nftController.ShowTheNFTCollection)
+router.route("/showUsersHavingNFT/:id").get(nftController.userHavingNFTs)
+router.route("/sale/:id").post(nftController.forSale)
+router.route('/showNFtsForSale').get(nftController.showSaleNFTs)
+router.route("/buy/:id").post(nftController.buyNft)
+router.route("/bid/:id").post(nftController.bidNFT)
 router.route('/updateNFT/:id').patch(nftController.updateNftCollection)
 
 router.route('/:id')

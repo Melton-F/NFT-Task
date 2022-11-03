@@ -105,10 +105,20 @@ exports.updateCollectionById = (req, res)=>{
 exports.collectionsInUser = (req, res)=>{
     Collection.find({userHolder:req.params.id})
         .then(result=>{
+            if(result<1){
+                res.status(404).json({
+                    message:"No data found"
+                })
+            }
             res.status(200).json({
                 message:"collections hold by user are..",
                 count:result.length,
                 collection:result
+            })
+        })
+        .catch(e=>{
+            res.status(400).json({
+                error:e.message
             })
         })
 }

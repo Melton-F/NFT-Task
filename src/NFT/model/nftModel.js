@@ -6,13 +6,12 @@ const nftSchema = new mongoose.Schema({
   },
   description: { type: String },
   nftImage: { type: String },
-  nftCollection: [
+  nftCollection: 
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Collection",
       required: true,
     },
-  ],
   status: { type: Boolean },
   price: { type: Number },
   isSold: { type: Boolean },
@@ -24,7 +23,9 @@ const nftSchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:"User",
     required:true
-}
+  },
+  forSale:{type:Number,default:0}, //sale ku iruntha 1 nu irukanum
+//   activeOwner:{type:mongoose.Schema.Types.ObjectId}
 });
 
 const NFT = mongoose.model("NFT", nftSchema);

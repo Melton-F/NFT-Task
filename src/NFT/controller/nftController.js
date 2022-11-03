@@ -2,7 +2,8 @@ import NFT from '../model/nftModel'
 
 exports.showNFTs = (req, res)=>{
     NFT.find()
-        // .populate("books","bookName")
+        .populate("nftHolder", "name")
+        .populate("nftCollection", "name")
         .then(NFTs=>{
             if(NFTs<1){
                 return res.status(404).json({
@@ -67,6 +68,7 @@ exports.createNFT = (req, res)=>{
 
 exports.getNFTById = (req, res)=>{
     NFT.findById(req.params.id)
+        .populate("nftHolder", "name")
         .then(nft=>{
             if(!nft){
                 res.status(404).json({
@@ -144,6 +146,103 @@ exports.ShowTheNFTCollection = (req, res)=>{
             res.status(400).json({
                 error:e.message
             })
+        })
+}
+
+exports.userHavingNFTs = (req, res)=>{
+    NFT.find({nftHolder:req.params.id})
+        // .populate()
+        .then(result=>{
+            if(result<1){
+                return res.status(400).json({
+                    message:"Sorry NFTs not found for the User"
+                })
+            }
+            res.status(200).json({
+                message:"user's NFTs shown",
+                count_of_usersNFT:result.length,
+                NFTs_Own_By_User:result
+            })
+        })
+        .catch(e=>{
+            res.status(400).json({
+                error:e.message
+            })
+        })
+}
+
+exports.forSale = (req, res)=>{
+    const forSale = req.body.forSale
+    if(forSale==1){
+        NFT.findByIdAndUpdate(req.params.id,{forSale:1}, {new:true})
+            .then(result=>{
+                res.status(200).json({
+                    forSaleUpdated:result
+                })
+            })
+            .catch(e=>{
+                res.json({
+                    error:e.message
+                })
+            })
+    }
+}
+
+exports.showSaleNFTs = (req, res)=>{
+    NFT.find({forSale:1})
+        .then(result=>{
+            if(result<1){
+                res.status(200).json({
+                    message:"No NFTs are for sale"
+                })
+            }
+            res.status(200).json({
+                count:result.length,
+                NFTs_For_Sale:result
+            })
+        })
+        .catch(e=>{
+            res.status(200).json({
+                error:e.message
+            })
+        })
+}
+
+exports.buyNft = (req, res)=>{
+    NFT.findById(req.params.id)
+        .then(nft=>{
+            if(!nft){
+                res.status(404).json({
+                    message:"NFT not fpoound"
+                })
+            }
+            else if(nft){
+                const id = req.params.id
+                const updates = req.body
+                const options = {new: true}
+                NFT.findByIdAndUpdate(id, updates, options)
+                    .then(updatedNFT=>{
+                        res.status(200).json({
+                            message:`NFT has been sold to : ${req.body.nftHolder}`,
+                            theNFT:updatedNFT
+                        })
+                    })
+                    .catch(e=>{
+                        res.send(e.message)
+                    })
+            }
+        })
+        .catch(e=>{
+            res.status(400).json({
+                error:e.message
+            })
+        })
+}
+
+exports.bidNFT = (req, res)=>{
+    NFT.findById(req.params.id)
+        .then(result=>{
+            
         })
 }
 
