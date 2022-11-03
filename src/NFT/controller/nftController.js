@@ -1,5 +1,9 @@
 import NFT from '../model/nftModel'
 
+import cron from 'node-cron'
+
+import Bid from '../../Bid/BidModel/bidmodel'
+
 exports.showNFTs = (req, res)=>{
     NFT.find()
         .populate("nftHolder", "name")
@@ -190,9 +194,10 @@ exports.forSale = (req, res)=>{
 
 exports.showSaleNFTs = (req, res)=>{
     NFT.find({forSale:1})
+        .populate("nftHolder", "name")
         .then(result=>{
             if(result<1){
-                res.status(200).json({
+                return res.status(200).json({
                     message:"No NFTs are for sale"
                 })
             }
@@ -206,6 +211,28 @@ exports.showSaleNFTs = (req, res)=>{
                 error:e.message
             })
         })
+}
+
+exports.showSaleTypeBuyNFTs = async(req, res)=>{
+    try{
+        const show = await NFT.find({saleType:"Buy"})
+        res.status(200).json({
+            show
+        })
+    }
+    catch(e){
+        res.send(e)
+    }
+    // NFT.find({saleType:"Bid"})
+    //     .then(result=>{
+    //         if(result<1){
+    //            return res.send("No data")
+    //         }
+    //         res.send(result)
+    //     })
+    //     .catch(e=>{
+    //         res.send(e)
+    //     })
 }
 
 exports.buyNft = (req, res)=>{
@@ -239,10 +266,90 @@ exports.buyNft = (req, res)=>{
         })
 }
 
-exports.bidNFT = (req, res)=>{
+// exports.bidNFT = async (req, res)=>{
+//     try{
+//         let highestPrice= [];
+//         const NFTOriginalValue = req.body.NFTActualPrice
+//         let lastUser = req.params.id
+//         let lastPrice = req.body.bidPrice
+
+//         if(NFTOriginalValue<lastPrice){
+//             highestPrice.push(lastPrice)
+//             let final = Math.max(...highestPrice)
+//             let highestBidder = lastUser
+//             console.log(`highest bid is : ${final}`)
+//             console.log(`Highest bidder is : ${highestBidder}`)
+//         }
+
+//         const timerFunction = cron.schedule("")
+
+//         res.status(200).json({
+//             message:"Thanks for the bidding, Please bid next"
+//         })
+//     }
+//     catch(e){
+//         res.status(400).json({
+//             error:e.message
+//         })
+//     }
+// }
+
+exports.bidNFTv2 = (req, res)=>{
+    const bid = new Bid({
+        nftId:req.body.nftId,
+        bidder:req.body.bidder,
+        bidPrice:req.body.bidPrice
+    })
+    bid.save()
+        .then(doc=>{
+            res.status(200).json({
+                message:"Thanks for the bidding, Please wait untill the final bid"
+            })
+        })
+        .catch(err=>{
+            res.status(400).json({
+                erro:err.message
+            })
+        })
+}
+
+exports.showHighestBid = async(req, res)=>{
+    try{
+        const bid = await Bid.find({nftId:req.body.nftId}).sort({bidPrice:-1}).exec()
+        let highest_bid = bid[0]
+        res.status(200).json({
+            highest_bid
+        })
+    }
+    catch(e){
+        res.send(e.message)
+    }    
+}
+
+exports.confirmBid = (req, res)=>{
     NFT.findById(req.params.id)
-        .then(result=>{
-            
+        .then(nft=>{
+            if(!nft){
+                return res.status(404).json({
+                    message:"nft not found"
+                })
+            }
+            const id = req.params.id
+            const updates = req.body
+            const options = {new: true}
+
+            NFT.findByIdAndUpdate(id, updates, options)
+                .then(updatedNFT=>{
+                    res.status(200).json({
+                        message:`NFT has been sold to : ${req.body.nftHolder}`,
+                        theNFT:updatedNFT
+                    })
+                })
+        })
+        .catch(e=>{
+            res.status(400).json({
+                error:e.message
+            })
         })
 }
 
