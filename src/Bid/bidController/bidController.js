@@ -107,9 +107,6 @@ async function confirmBidByCronJob() {
               console.log(`highest bid failed for ${item.name}`);
             }
           }
-          else if(bid.length === 0){
-            console.log("the length is zero")
-          }
         });
     }
   } catch (error) {
