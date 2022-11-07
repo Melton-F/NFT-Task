@@ -13,7 +13,7 @@ exports.showCollections = (req, res)=>{
             status:"Success",
             message:"All collectionsshowed",
             no_Of_Collections: collection.length,
-            collection
+            collections:collection
         })
     })
     .catch(err=>{
@@ -74,7 +74,7 @@ exports.getCollectionById = (req, res)=>{
             }
             res.status(200).json({
                 status:"Success",
-                collection
+                collectionForTheId:collection
             })
         })
         .catch(err=>{

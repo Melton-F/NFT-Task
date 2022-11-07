@@ -2,7 +2,7 @@ import NFT from '../model/nftModel'
 
 import cron from 'node-cron'
 
-import Bid from '../../Bid/BidModel/bidmodel'
+// import Bid from '../../Bid/bidModel/bidModel'
 
 exports.showNFTs = (req, res)=>{
     NFT.find()
@@ -19,7 +19,7 @@ exports.showNFTs = (req, res)=>{
                 status:"Success",
                 message:"All NFTs showed",
                 no_Of_NFTs: NFTs.length,
-                NFTs
+                NFTs:NFTs
             })
         })
         .catch(err=>{
@@ -59,7 +59,7 @@ exports.createNFT = (req, res)=>{
         res.status(201).json({
             status:"Success",
             message:"NFT created",
-            createdNFT:doc
+            created_NFT:doc
         })
     })
     .catch(err=>{
@@ -82,7 +82,7 @@ exports.getNFTById = (req, res)=>{
             }
             res.status(200).json({
                 status:"Success",
-                nft
+                nftForId:nft
             })
         })
         .catch(err=>{
@@ -121,7 +121,7 @@ exports.updateNftCollection = async (req, res)=>{
             .then(updatedField=>{
                 res.status(200).json({
                     message:"updated",
-                    updatedField
+                    updatedField:updatedField
                 })
             })
     }
@@ -143,7 +143,7 @@ exports.ShowTheNFTCollection = (req, res)=>{
             res.status(200).json({
                 message:"NFTs showed for the passed collection",
                 No_Of_NFT:result.length,
-                result
+                NftCollection:result
             })
         })
         .catch(e=>{
@@ -215,13 +215,13 @@ exports.showSaleNFTs = (req, res)=>{
 
 exports.showSaleTypeBuyNFTs = async(req, res)=>{
     try{
-        const show = await NFT.find({saleType:"Buy"})
+        const buy = await NFT.find({saleType:"Buy"})
         res.status(200).json({
-            show
+            saleTypesAsBuy:buy
         })
     }
     catch(e){
-        res.send(e)
+        res.send(e.message)
     }
     // NFT.find({saleType:"Bid"})
     //     .then(result=>{
@@ -266,97 +266,10 @@ exports.buyNft = (req, res)=>{
         })
 }
 
-// exports.bidNFT = async (req, res)=>{
-//     try{
-//         let highestPrice= [];
-//         const NFTOriginalValue = req.body.NFTActualPrice
-//         let lastUser = req.params.id
-//         let lastPrice = req.body.bidPrice
-
-//         if(NFTOriginalValue<lastPrice){
-//             highestPrice.push(lastPrice)
-//             let final = Math.max(...highestPrice)
-//             let highestBidder = lastUser
-//             console.log(`highest bid is : ${final}`)
-//             console.log(`Highest bidder is : ${highestBidder}`)
-//         }
-
-//         const timerFunction = cron.schedule("")
-
-//         res.status(200).json({
-//             message:"Thanks for the bidding, Please bid next"
-//         })
-//     }
-//     catch(e){
-//         res.status(400).json({
-//             error:e.message
-//         })
-//     }
-// }
-
-exports.bidNFTv2 = (req, res)=>{
-    const bid = new Bid({
-        nftId:req.body.nftId,
-        bidder:req.body.bidder,
-        bidPrice:req.body.bidPrice
-    })
-    bid.save()
-        .then(doc=>{
-            res.status(200).json({
-                message:"Thanks for the bidding, Please wait untill the final bid"
-            })
-        })
-        .catch(err=>{
-            res.status(400).json({
-                erro:err.message
-            })
-        })
-}
-
-exports.showHighestBid = async(req, res)=>{
-    try{
-        const bid = await Bid.find({nftId:req.body.nftId}).sort({bidPrice:-1}).exec()
-        let highest_bid = bid[0]
-        res.status(200).json({
-            highest_bid
-        })
-    }
-    catch(e){
-        res.send(e.message)
-    }    
-}
-
-exports.confirmBid = (req, res)=>{
-    NFT.findById(req.params.id)
-        .then(nft=>{
-            if(!nft){
-                return res.status(404).json({
-                    message:"nft not found"
-                })
-            }
-            const id = req.params.id
-            const updates = req.body
-            const options = {new: true}
-
-            NFT.findByIdAndUpdate(id, updates, options)
-                .then(updatedNFT=>{
-                    res.status(200).json({
-                        message:`NFT has been sold to : ${req.body.nftHolder}`,
-                        theNFT:updatedNFT
-                    })
-                })
-        })
-        .catch(e=>{
-            res.status(400).json({
-                error:e.message
-            })
-        })
-}
-
 exports.deleteNFT = (req, res)=>{
     NFT.deleteOne({_id:req.params.id})
         .exec()
-        .then(result=>{
+        .then(()=>{
             res.status(204).json({
                 status:"Success",
                 message:"NFT deleted successfully"
